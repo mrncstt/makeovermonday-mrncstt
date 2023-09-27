@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import pydeck as pdk
 
 # Set the page configuration
 st.set_page_config(page_title="Street Level Temperatures NYC", page_icon="🌡️")
@@ -16,9 +17,9 @@ df = df.rename(columns={
     'Day': 'day'
 })
 
-# Extract and format the "Day" column
+# Extract and format the "day" column
 df['day'] = df['day'].str[:10]
-df['day'] = pd.to_datetime(df['Day']).dt.strftime('%m-%d-%Y')
+df['day'] = pd.to_datetime(df['day']).dt.strftime('%m-%d-%Y')
 
 # Normalize the airtemp column to get values between 0 and 1 for heatmap intensity
 max_temp = df['airtemp'].max()
@@ -29,16 +30,34 @@ df['airtemp_normalized'] = (df['airtemp'] - min_temp) / (max_temp - min_temp)
 st.markdown("# Street Level Temperatures NYC")
 st.sidebar.header("Street Level Temperatures NYC")
 
-# Add a selector for the "Day" column
-selected_day = st.sidebar.selectbox("Select a Day:", df['Day'].unique())
+# Add a selector for the "day" column
+selected_day = st.sidebar.selectbox("Select a Day:", df['day'].unique())
 
 # Filter the dataframe based on the selected day
-df_filtered = df[df['Day'] == selected_day]
+df_filtered = df[df['day'] == selected_day]
 
-# Display the map with heatmap for the selected day
-st.map(df_filtered, zoom=10)
+# Plotting the heatmap
+layer = pdk.Layer(
+    "HeatmapLayer",
+    data=df_filtered,
+    opacity=0.9,
+    get_position=["lon", "lat"],
+    get_weight="airtemp_normalized",
+    threshold=0.3,
+    radiusPixels=30,
+)
+
+view_state = pdk.ViewState(
+    latitude=df_filtered['lat'].mean(),
+    longitude=df_filtered['lon'].mean(),
+    zoom=10,
+    min_zoom=5,
+    max_zoom=15,
+    pitch=40.5,
+    bearing=-27.36,
+)
+
+st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=view_state))
 
 # Optional: Display the raw data in a table below the map
 st.write(df_filtered)
-
-
