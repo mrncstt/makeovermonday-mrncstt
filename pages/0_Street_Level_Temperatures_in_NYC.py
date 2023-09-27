@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from urllib.error import URLError
+import altair as alt
+from streamlit.hello.utils import show_code
 
 df = pd.DataFrame(
     np.random.randn(1000, 2) / [50, 50] + [37.76, -122.4],
@@ -16,6 +19,4 @@ st.write(
 
 )
 
-animation_demo()
 
-show_code(animation_demo)
