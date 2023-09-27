@@ -8,9 +8,8 @@ st.set_page_config(page_title="Street Level Temperatures NYC", page_icon="ðŸŒ¡ï¸
 # Read the data from the provided URL
 df = pd.read_csv('https://query.data.world/s/k4zsbr6qvlvfybcfl3h7mkbovuoa3u?dws=00000')
 
-# Extract the necessary columns
-df = df[['latitude', 'longitude', 'airtemp']]
-df.columns = ['lat', 'lon', 'airtemp']
+# Split the "location" column into "lon" and "lat" columns
+df[['lon', 'lat']] = df['location'].str.split(' ', expand=True).astype(float)
 
 # Normalize the airtemp column to get values between 0 and 1 for heatmap intensity
 max_temp = df['airtemp'].max()
